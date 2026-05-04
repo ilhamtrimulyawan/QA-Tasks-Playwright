@@ -1,0 +1,55 @@
+Case ID,Title,Preconditions,Steps,Expected Results,Priority,Tags,Platform,Source,AI Generated
+TC-001,Verify admin can approve awaiting transaction,"User is logged in as Admin, User is on the Approvals page, Transactions with 'Awaiting approval' status exist","Given I am logged in as Admin
+And I am on the Approvals page
+When I filter by year 2026
+And I filter by 'Awaiting approval' status
+And I click Actions on the first transaction
+And I click 'Approve transaction'
+Then I should see the confirmation dialog
+When I click 'Approve' in the confirmation dialog
+Then I should see a success message","Approval success toast message is displayed and transaction status changes to 'Approved'",P0,Functional,WEB,existing,false
+TC-002,Verify admin can reject awaiting transaction,"User is logged in as Admin, User is on the Approvals page, Transactions with 'Awaiting approval' status exist","Given I am logged in as Admin
+And I am on the Approvals page
+When I filter by year 2026
+And I filter by 'Awaiting approval' status
+And I click Actions on the first transaction
+And I click 'Reject transaction'
+Then I should see the reject dialog
+When I enter a rejection reason
+And I click 'Reject' in the dialog
+Then I should see a success message","Rejection success message is displayed and transaction status changes to 'Rejected'",P0,Functional,WEB,existing,false
+TC-003,Verify admin can cancel approval confirmation,"User is logged in as Admin, User is on the Approvals page, Transactions with 'Awaiting approval' status exist","Given I am logged in as Admin
+And I am on the Approvals page
+When I filter by year 2026
+And I filter by 'Awaiting approval' status
+And I click Actions on the first transaction
+And I click 'Approve transaction'
+Then I should see the confirmation dialog
+When I click 'Cancel' in the confirmation dialog
+Then the dialog should close and transaction remains unchanged","Confirmation dialog closes and transaction still shows 'Awaiting approval' status",P1,Functional,WEB,existing,false
+TC-004,Verify filter by status shows correct results,"User is logged in as Admin, User is on the Approvals page","Given I am logged in as Admin
+And I am on the Approvals page
+When I filter by 'Approved' status
+Then all visible transactions should show 'Approved' status","All rows in the table display 'Approved' status badge",P1,Functional,WEB,existing,false
+TC-005,Verify error message when approving without permission,"User is logged in as regular User (no approval permission), User is on the Approvals page","Given I am logged in as regular User
+And I am on the Approvals page
+When I attempt to approve a transaction
+Then I should see an access denied or error message","Error message is displayed indicating insufficient permissions",P0,Negative,WEB,new,true
+TC-006,Verify pagination on approvals list,"User is logged in as Admin, More than one page of transactions exist","Given I am logged in as Admin
+And I am on the Approvals page
+When I click the 'Next page' button
+Then the next page of transactions should be displayed
+When I click the 'Previous page' button
+Then the previous page should be displayed","Pagination navigates correctly between pages and displays different transaction rows",P1,Functional,WEB,new,true
+TC-007,Verify reject transaction without entering reason,"User is logged in as Admin, User is on the Approvals page, Transactions with 'Awaiting approval' status exist","Given I am logged in as Admin
+And I am on the Approvals page
+When I filter by 'Awaiting approval' status
+And I click Actions on the first transaction
+And I click 'Reject transaction'
+And I leave the reason field empty
+And I click 'Reject'
+Then I should see a validation error for the reason field","Validation error is displayed requiring a rejection reason; transaction is not rejected",P1,Negative,WEB,new,true
+TC-008,Verify filter by 'Rejected' status,"User is logged in as Admin, User is on the Approvals page, Rejected transactions exist","Given I am logged in as Admin
+And I am on the Approvals page
+When I filter by 'Rejected' status
+Then all visible transactions should show 'Rejected' status","All rows in the table display 'Rejected' status badge",P1,Functional,WEB,new,true

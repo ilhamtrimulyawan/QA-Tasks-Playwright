@@ -1,0 +1,266 @@
+Test ID,Title,Scenario,Priority,Type
+TC-001,Successful book checkout with valid borrower,"Given book ID 9005 has stock greater than 0
+And borrower exam.checkout-ready@example.com exists with no overdue items
+When I navigate to main book list page
+And I search for book ID 9005
+And I click checkout action button for book 9005
+And I enter Library Member ID 'exam.checkout-ready@example.com'
+And I verify borrower name and phone display
+And I click checkout submit button
+Then checkout should be successful
+And stock should be decremented by 1
+And checkout record should be created
+And success message should be displayed
+And book log should show new checkout event",High,Functional
+TC-002,Checkout fails when borrower has overdue items,"Given book ID 9005 has stock greater than 0
+And borrower exam.return-late@example.com has overdue checkout on book 9002
+When I navigate to main book list page
+And I search for book ID 9005
+And I click checkout action button
+And I enter Library Member ID 'exam.return-late@example.com'
+Then overdue warning banner should be visible with message that overdue borrowers cannot borrow
+And checkout submit button should be disabled
+And no checkout record should be created
+And stock should remain unchanged",High,Functional
+TC-003,Checkout fails when book is out of stock,"Given book ID 9003 has stock equal to 0
+And borrower exam.checkout-ready@example.com exists with no overdue items
+When I navigate to main book list page
+And I search for book ID 9003
+And I click checkout action button
+And I enter Library Member ID 'exam.checkout-ready@example.com'
+Then checkout submit button should be disabled
+And message 'The selected book is out of stock.' should be displayed
+And no checkout record should be created",High,Functional
+TC-004,Checkout fails with invalid email format,"Given book ID 9005 has stock greater than 0
+When I navigate to main book list page
+And I search for book ID 9005
+And I click checkout action button
+And I enter invalid email format such as 'notanemail', 'test@', '@example.com', or 'test space@example.com'
+Then checkout submit button should remain disabled for all invalid formats
+And validation banner should show error message
+And no borrower lookup should be performed
+And no checkout record should be created",High,Functional
+TC-005,Checkout fails with empty Library Member ID,"Given book ID 9005 has stock greater than 0
+When I navigate to main book list page
+And I search for book ID 9005
+And I click checkout action button
+And I leave Library Member ID input empty
+Then checkout submit button should be disabled
+And no borrower information should be displayed
+And no checkout record should be created",Medium,Functional
+TC-006,Checkout fails when Library Member ID not found in registry,"Given book ID 9005 has stock greater than 0
+When I navigate to main book list page
+And I search for book ID 9005
+And I click checkout action button
+And I enter non-existent Library Member ID 'nonexistent@example.com'
+Then checkout submit button should be disabled
+And validation message should indicate member not found
+And no checkout record should be created",High,Functional
+TC-007,Checkout fails when borrower already has the same book checked out,"Given book ID 9001 has an active checkout by exam.return-on-time@example.com
+And book 9001 has stock greater than 0
+When I navigate to main book list page
+And I search for book ID 9001
+And I click checkout action button
+And I enter Library Member ID 'exam.return-on-time@example.com'
+Then checkout submit button should be disabled
+And message 'The borrower already has that book checked out.' should be displayed
+And no duplicate checkout record should be created
+And stock should remain unchanged",High,Functional
+TC-008,Successful on-time return,"Given book ID 9001 has an active checkout by exam.return-on-time@example.com
+And the checkout date is today minus 7 days
+And the due date is today plus 7 days and not overdue
+When I navigate to main book list page
+And I search for book ID 9001
+And I click return action button
+And I enter Library Member ID 'exam.return-on-time@example.com'
+And I verify borrower name and phone display
+And I verify due date and return date display
+And I click return submit button
+Then return should be successful
+And success message 'Returned ""<book_name>"" from Member One.' should be displayed
+And stock should be incremented by 1
+And checkout should be marked as returned
+And no overdue fine should be displayed
+And book log should show return event",High,Functional
+TC-009,Successful overdue return with fine calculation,"Given book ID 9002 has an active checkout by exam.return-late@example.com
+And the checkout date is today minus 21 days
+And the due date is today minus 7 days and is overdue by 7 days
+When I navigate to main book list page
+And I search for book ID 9002
+And I click return action button
+And I enter Library Member ID 'exam.return-late@example.com'
+And I verify borrower details display
+And I verify overdue fine summary displays
+And I click return submit button
+Then return should be successful
+And stock should be incremented by 1
+And checkout should be marked as returned
+And overdue fine should be calculated and displayed as Rp70000 (7 days * Rp10000)
+And book log should show return event with fine amount",High,Functional
+TC-010,Return fails when no active checkout exists,"Given book ID 9005 has no active checkout
+And borrower exam.checkout-ready@example.com exists
+When I navigate to main book list page
+And I search for book ID 9005
+And I click return action button
+And I enter Library Member ID 'exam.checkout-ready@example.com'
+Then return submit button should be disabled
+And message 'No active checkout was found' should be displayed
+And stock should remain unchanged
+And no return record should be created",High,Functional
+TC-011,Return boundary - submitted on exact due date is on-time,"Given book ID 9001 has an active checkout with due date equal to today in GMT+7
+When I navigate to main book list page
+And I search for book ID 9001
+And I click return action button
+And I enter Library Member ID for the active checkout
+And I verify return date equals due date
+And I click return submit button
+Then return should be processed as on-time
+And no overdue fine should be displayed or calculated
+And success message should be shown
+And stock should be incremented
+And book log should show on-time return",High,Functional
+TC-012,Return one day overdue calculates single day fine,"Given book ID 9002 has an active checkout with due date equal to yesterday in GMT+7
+When I navigate to main book list page
+And I search for book ID 9002
+And I click return action button
+And I enter Library Member ID for the active checkout
+And I verify overdue fine summary
+And I click return submit button
+Then return should be successful
+And overdue fine should be calculated as Rp10000 (1 day * Rp10000)
+And stock should be incremented
+And book log should show return with fine",Medium,Functional
+TC-013,View book log with circulation history,"Given book ID 9001 has checkout and return history
+When I navigate to main book list page
+And I search for book ID 9001
+And I click show log action button
+Then book log page should be displayed
+And page title should show selected book ID and title
+And log table should show all checkout and return events
+And each entry should show event type, borrower name, checkout date, return date when applicable, and fine amount when applicable
+And the newest events should appear first",High,Functional
+TC-014,View book log with empty history,"Given book ID 9004 has no borrowing history
+When I navigate to main book list page
+And I search for book ID 9004
+And I click show log action button
+Then book log page should be displayed
+And page title should show selected book ID and title
+And empty state message should be displayed
+And no placeholder log entries should be shown
+And log table should be empty",Medium,Functional
+TC-015,Checkout calculates correct due date as 14 days in GMT+7,"Given book ID 9005 has stock greater than 0
+And the current library date in GMT+7 is known
+When I navigate to main book list page
+And I search for book ID 9005
+And I click checkout action button
+And I enter valid Library Member ID 'exam.checkout-ready@example.com'
+And I observe checkout date and due date display
+And I complete checkout
+Then checkout date should equal current date in GMT+7
+And due date display should show exactly checkout date plus 14 days in GMT+7
+And checkout record should be persisted with correct dates",Medium,Functional
+TC-016,Return with multiple weeks overdue calculates accurate fine,"Given book ID 9002 has an active checkout with due date equal to today minus 21 days (3 weeks overdue)
+When I navigate to main book list page
+And I search for book ID 9002
+And I click return action button
+And I enter Library Member ID for the active checkout
+And I verify overdue fine summary calculation
+And I complete return
+Then overdue fine should be calculated as Rp210000 (21 days * Rp10000)
+And fine amount should be displayed before submission
+And return should be successful
+And book log should show return with correct fine amount",Medium,Functional
+TC-017,Verify stock atomicity during concurrent checkout attempts,"Given book ID 9005 has stock equal to 1
+And two different borrowers have no overdue items
+When I simulate near-simultaneous checkout of book 9005 by both borrowers
+Then only one checkout should succeed
+And stock should decrement to 0
+And the second checkout should fail with out-of-stock message
+And database should maintain consistency
+And no race condition should occur",High,Functional
+TC-018,Verify checkout page displays all required DOM elements,"Given book ID 9005 has stock greater than 0
+When I navigate to main book list page
+And I search for book ID 9005
+And I click checkout action button
+Then checkout page wrapper 'checkout-page' should exist
+And selected book ID 'checkout-selected-book-id' should display
+And selected book title 'checkout-selected-book-title' should display
+And available stock 'checkout-available-stock' should display
+And Library Member ID input 'library-member-id-input' should exist
+And member name display 'member-name-display' should exist
+And member phone display 'member-phone-display' should exist
+And checkout date input 'checkout-date-input' should exist
+And due date display 'due-date-display' should exist
+And submit button 'checkout-submit-button' should exist
+And validation banner 'checkout-validation-banner' should exist",Medium,Functional
+TC-019,Verify return page displays all required DOM elements,"Given book ID 9001 has an active checkout
+When I navigate to main book list page
+And I search for book ID 9001
+And I click return action button
+Then return page wrapper 'return-page' should exist
+And selected book ID 'return-selected-book-id' should display
+And return book title 'return-book-title' should display
+And Library Member ID input 'return-library-member-id-input' should exist
+And member name display 'return-member-name-display' should exist
+And member phone display 'return-member-phone-display' should exist
+And due date text 'return-due-date' should display
+And return date input 'return-date-input' should exist
+And submit button 'return-submit-button' should exist
+And validation banner 'return-validation-banner' should exist",Medium,Functional
+TC-020,Verify book log page displays all required DOM elements,"Given book ID 9001 has checkout and return history
+When I navigate to main book list page
+And I search for book ID 9001
+And I click show log action button
+Then book log page wrapper 'book-log-page' should exist
+And selected book ID 'book-log-selected-book-id' should display
+And selected book title 'book-log-selected-book-title' should display
+And book log table 'book-log-table' should exist
+And log rows with IDs 'book-log-row_<eventId>' should exist
+And event type cells 'book-log-event_<eventId>' should exist
+And borrower name cells 'book-log-borrower_<eventId>' should exist
+And event date cells 'book-log-date_<eventId>' should exist",Medium,Functional
+TC-021,Search book by exact book ID returns correct result,"Given books 9001, 9002, 9003, 9004, and 9005 exist in the system
+When I navigate to main book list page
+And I enter exact book ID '9005' in search input 'book-search-input'
+Then book list table should display exactly one row
+And book row 'book-row_9005' should exist
+And book ID cell 'book-id_9005' should display '9005'
+And book title cell 'book-title_9005' should display correct title
+And stock cell 'book-stock_9005' should display current stock
+And action buttons for checkout, return, and show log should exist",High,Functional
+TC-022,Search book by partial title returns matching results,"Given multiple books exist with different titles
+When I navigate to main book list page
+And I enter partial book title in search input 'book-search-input'
+Then book list table should display all matching books
+And each matching book row should have correct book ID, title, and stock
+And all action buttons (checkout, return, show log) should be present for each row
+And non-matching books should not be displayed",Medium,Functional
+TC-023,Reject XSS attempt in Library Member ID input on checkout,"Given book ID 9005 has stock greater than 0
+When I navigate to main book list page
+And I search for book ID 9005
+And I click checkout action button
+And I enter script injection in Library Member ID '<script>alert(''XSS'')</script>@example.com'
+Then input should be rejected
+And script should not be executed
+And validation error should be shown
+And no checkout record should be created
+And malicious input should not be stored in database",High,Security
+TC-024,Reject HTML injection in Library Member ID input on return,"Given book ID 9001 has an active checkout
+When I navigate to main book list page
+And I search for book ID 9001
+And I click return action button
+And I enter HTML injection in Library Member ID '<img src=x onerror=alert(''XSS'')>@example.com'
+Then input should be rejected
+And HTML or script should not be rendered or executed
+And validation error should be shown
+And no return should be processed
+And malicious input should not be stored",High,Security
+TC-025,Verify all validations exist on both client and server side,"Given book ID 9005 has stock greater than 0
+When I bypass client-side validation using browser dev tools
+And I submit checkout with invalid email directly to server
+And I submit checkout with empty member ID to server
+And I attempt checkout for out-of-stock book
+Then all invalid requests should be rejected by server with appropriate error messages
+And server-side validation should match client-side rules
+And no invalid data should be persisted
+And security should be maintained",High,Security

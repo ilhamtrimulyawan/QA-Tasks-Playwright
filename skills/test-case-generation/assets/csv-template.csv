@@ -1,0 +1,21 @@
+Case ID,Title,Preconditions,Steps,Expected Results,Priority,Tags,Platform,AI Generated
+TC-001,Verify successful login with valid credentials,"User has a valid account, Browser is open","Given I am on the login page
+When I enter valid email and password
+And I click the Login button
+Then I should be redirected to the dashboard","User is redirected to dashboard and sees the company logo",P0,Functional,WEB,true
+TC-002,Verify error message for invalid password,"User has a valid account, Browser is open","Given I am on the login page
+When I enter valid email and invalid password
+And I click the Login button
+Then I should see an error message","Error message is displayed and user remains on login page",P0,Negative,WEB,true
+TC-003,Verify user can navigate to feature page,"User is logged in as Admin, User is on the dashboard","Given I am logged in as Admin
+And I am on the dashboard
+When I click on the Feature menu item in the sidebar
+Then I should be redirected to the Feature page","Feature page is displayed with the expected heading and table",P0,Functional,WEB,true
+TC-004,Verify form validation for empty required fields,"User is logged in, User is on the form page","Given I am on the form page
+When I leave all required fields empty
+And I click the Submit button
+Then I should see validation error messages for each required field","Validation errors displayed for each empty required field; form is not submitted",P1,Negative,WEB,true
+TC-005,Verify API returns correct response for valid request,"API server is running, Valid auth token is available","Given I have a valid authentication token
+When I send a GET request to /api/resource
+Then the response status code should be 200
+And the response body should contain expected fields","Response status 200 with valid JSON body containing required fields",P0,Functional,API,true
